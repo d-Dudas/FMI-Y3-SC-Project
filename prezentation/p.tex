@@ -95,15 +95,12 @@ private:
   \end{block}
 \end{frame}
 
-\section{AES}
-
-\begin{frame}{AES (Advanced Encryption Standard)}
-  \begin{itemize}
-    \item Algoritm de criptare simetrică cu chei de 128, 192, sau 256 biți
-    \item Aprobat ca standard de criptare în 2001
-    \item Structură: 10, 12, sau 14 runde de substituții, permutări și mixări
-    \item Dimensiunea blocului criptat: 128 biți
-  \end{itemize}
+\begin{frame}[fragile]{Utilizare DES}
+  \begin{block}{Exemplu de apel CLI}
+    \begin{lstlisting}[language=bash]
+$ ${APP} -t des -(e/d) <input_file> [-o <output_file>] -p <key>
+    \end{lstlisting}
+  \end{block}
 \end{frame}
 
 \begin{frame}{AES Diagram}
@@ -144,6 +141,13 @@ public:
   \end{block}
 \end{frame}
 
+\begin{frame}[fragile]{Utilizare AES}
+  \begin{block}{Exemplu de apel CLI}
+    \begin{lstlisting}[language=bash]
+$ ${APP} -t aes -(e/d) <input_file> [-o <output_file>] -p <key>
+    \end{lstlisting}
+  \end{block}
+\end{frame}
 \section{RSA}
 
 \begin{frame}{RSA (Rivest-Shamir-Adleman)}
@@ -195,6 +199,15 @@ private:
   mpz_class rsaDecrypt(const mpz_class& c, const mpz_class& d, const mpz_class& n);
   const int keyBitSize = 1024;
 };
+    \end{lstlisting}
+  \end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{Utilizare RSA}
+  \begin{block}{Exemplu de apel CLI}
+    \begin{lstlisting}[language=bash]
+$ ${APP} -t rsa -(e/d) <input_file> [-o <output_file>] -k <key>
     \end{lstlisting}
   \end{block}
 \end{frame}
