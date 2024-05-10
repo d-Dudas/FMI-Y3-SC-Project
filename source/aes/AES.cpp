@@ -281,15 +281,27 @@ void AES::addPKCS7Padding(std::vector<std::bitset<8>>& block)
   }
 }
 
+void AES::adjustKeySize(std::string& key)
+{
+  if (key.size() > 4 * keyCoefficient)
+  {
+    key = key.substr(0, 4 * keyCoefficient);
+    std::cout << "Key too long, using only the first " << 4 * keyCoefficient
+              << " characters\n";
+  }
+  else
+  {
+    int i = 0;
+    while (key.size() < 4 * keyCoefficient)
+    {
+      key += key[i++];
+    }
+  }
+}
+
 void AES::encrypt(IOConfig& ioConfig)
 {
-  for (int i = 0; i < 4 * keyCoefficient
-                  && ioConfig.passphrase.size() < 4 * keyCoefficient;
-       i++)
-  {
-    ioConfig.passphrase += ioConfig.passphrase[i];
-  }
-
+  adjustKeySize(ioConfig.passphrase);
   std::vector<std::bitset<8>> expandedKey = keyExpansion(ioConfig.passphrase);
 
   std::ifstream inputFile(ioConfig.inputFile, std::ios::binary);
@@ -393,13 +405,7 @@ void AES::removePKCS7Padding(std::vector<std::bitset<8>>& data)
 
 void AES::decrypt(IOConfig& ioConfig)
 {
-  for (int i = 0; i < 4 * keyCoefficient
-                  && ioConfig.passphrase.size() < 4 * keyCoefficient;
-       i++)
-  {
-    ioConfig.passphrase += ioConfig.passphrase[i];
-  }
-
+  adjustKeySize(ioConfig.passphrase);
   std::vector<std::bitset<8>> expandedKey = keyExpansion(ioConfig.passphrase);
 
   std::ifstream inputFile(ioConfig.inputFile, std::ios::binary);

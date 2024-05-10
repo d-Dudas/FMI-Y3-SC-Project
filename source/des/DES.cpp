@@ -5,6 +5,8 @@
 #include <includes/des/DES.hpp>
 #include <includes/des/Structures.hpp>
 
+#include <includes/Operations.hpp>
+
 namespace des
 {
 const std::bitset<56> DES::initialKeyPermutation(const std::bitset<64>& key)
@@ -185,7 +187,23 @@ const std::bitset<64> DES::convertCharBufferToBitset(
 
 const void DES::addPaddingToBitset(std::bitset<64>& block, int originalSize)
 {
-  block <<= 8 * (8 - originalSize);
+  int paddingLength = 8 - originalSize;
+  std::bitset<64> paddingBits(paddingLength);
+  block <<= 8 * paddingLength;
+  for (int i = 0; i < paddingLength; ++i)
+  {
+    block |= (paddingBits << (8 * i));
+  }
+}
+
+const int DES::removePaddingFromBitset(std::bitset<64>& block)
+{
+  int paddingLength = block.to_ullong() & 0xFF;
+  if (paddingLength > 0 && paddingLength <= 8)
+  {
+    block >>= 8 * paddingLength;
+  }
+  return paddingLength;
 }
 
 const void DES::applyPermutationsOnChunks(
@@ -204,16 +222,24 @@ const void DES::applyPermutationsOnChunks(
   char buffer[8];
   while (inputFile.read(buffer, 8) || inputFile.gcount() > 0)
   {
+    int readBytes = inputFile.gcount();
     std::bitset<64> block =
         convertCharBufferToBitset(buffer, inputFile.gcount());
 
     if (inputFile.gcount() < 8)
     {
       addPaddingToBitset(block, inputFile.gcount());
+      readBytes = 8;
     }
 
     std::bitset<64> encryptedBlock = applyPermutations(block, subKeys);
-    for (int i = 7; i >= 0; --i)
+
+    if (ioConfig.operation == Operations::decrypt and inputFile.peek() == EOF)
+    {
+      readBytes = 8 - removePaddingFromBitset(encryptedBlock);
+    }
+
+    for (int i = readBytes - 1; i >= 0; --i)
     {
       outputFile.put(static_cast<char>((encryptedBlock >> (i * 8)).to_ulong()));
     }
@@ -223,16 +249,35 @@ const void DES::applyPermutationsOnChunks(
   outputFile.close();
 }
 
+const void DES::adjustKeySize(std::string& key)
+{
+  if (key.size() > 8)
+  {
+    key = key.substr(0, 8);
+    std::cout << "Key too long, using only the first 8 characters\n";
+  }
+  else
+  {
+    int i = 0;
+    while (key.size() < 8)
+    {
+      key += key[i++];
+    }
+  }
+}
+
 void DES::encrypt(IOConfig& ioConfig)
 {
-  std::bitset<64> key = keyStringToBitset(ioConfig.passphrase);
-  std::vector<std::bitset<48>> subKeys = generateKeys(key);
+  adjustKeySize(ioConfig.passphrase);
+  std::bitset<64> keyBitset = keyStringToBitset(ioConfig.passphrase);
+  std::vector<std::bitset<48>> subKeys = generateKeys(keyBitset);
 
   applyPermutationsOnChunks(ioConfig, subKeys);
 }
 
 void DES::decrypt(IOConfig& ioConfig)
 {
+  adjustKeySize(ioConfig.passphrase);
   std::bitset<64> key = keyStringToBitset(ioConfig.passphrase);
   std::vector<std::bitset<48>> subKeys = generateKeys(key);
   std::reverse(subKeys.begin(), subKeys.end());

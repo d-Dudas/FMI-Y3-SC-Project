@@ -78,9 +78,11 @@ private:
   const std::vector<std::bitset<48>> generateKeys(const std::bitset<64>& key);
   const std::bitset<64> keyStringToBitset(std::string& keyStr);
   const std::bitset<64> applyPermutations(std::bitset<64>& block, std::vector<std::bitset<48>>& subKeys);
+  void adjustKeySize(std::string& key);
   const void applyPermutationsOnChunks(IOConfig& ioConfig, std::vector<std::bitset<48>>& subKeys);
   const std::bitset<64> convertCharBufferToBitset(const char* buffer, int bufferSize);
   const void addPaddingToBitset(std::bitset<64>& block, int originalSize);
+  const int removePaddingFromBitset(std::bitset<64>& block);
   const std::bitset<56> initialKeyPermutation(const std::bitset<64>& key);
   const std::bitset<28> leftCircularShift(std::bitset<28>& halfKey, int shifts);
   const std::bitset<64> applyInitialPermutation(const std::bitset<64>& block);
@@ -120,6 +122,7 @@ class AES : public ICryptographicAlgorithm
   static const u_int8_t blockSize = 16;
   void keyExpansionCore(std::bitset<8> word[4], int rconIterationCount);
   std::vector<std::bitset<8>> keyExpansion(const std::string& key);
+  void adjustKeySize(std::string& key);
   void addPKCS7Padding(std::vector<std::bitset<8>>& block);
   void removePKCS7Padding(std::vector<std::bitset<8>>& data);
   std::vector<std::bitset<8>> convertCharBufferToBitsetVector(const char* buffer, size_t length);

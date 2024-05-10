@@ -43,5 +43,7 @@ class DES : public ICryptographicAlgorithm
       const char* buffer,
       int bufferSize);
   const void addPaddingToBitset(std::bitset<64>& block, int originalSize);
+  const int removePaddingFromBitset(std::bitset<64>& block);
+  const void adjustKeySize(std::string& key);
 };
 } // namespace des

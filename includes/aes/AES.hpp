@@ -23,6 +23,7 @@ class AES : public ICryptographicAlgorithm
   // key
   void keyExpansionCore(std::bitset<8> word[4], int rconIterationCount);
   std::vector<std::bitset<8>> keyExpansion(const std::string& key);
+  void adjustKeySize(std::string& key);
 
   // utils
   void addPKCS7Padding(std::vector<std::bitset<8>>& block);
